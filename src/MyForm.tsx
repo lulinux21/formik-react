@@ -1,82 +1,80 @@
 import React from 'react';
 import { withFormik, FormikProps } from 'formik';
-import { ContactFormValues } from './model/Contact';
 
-// Defina a interface para os dados do formulário
 export interface FormValues {
-  contact: ContactFormValues;
-}
-// Defina a interface para as props do componente
-interface OtherProps {
-  contactData?: ContactFormValues;
-  handleSubmit: (values: FormValues) => void; // Certifique-se de que a assinatura de handleSubmit esteja alinhada com FormData
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
 }
 
-// Defina o componente de formulário
-const MyForm: React.FC<FormikProps<FormValues> & OtherProps> = ({
-  values,
-  setFieldValue,
-  handleChange,
-  handleSubmit,
-  handleBlur,
-  isSubmitting,
-}) => (
-  <form onSubmit={handleSubmit}>
-    <div>
-      <label htmlFor="name">Name:</label>
-      <input
-        type="text"
-        name="name"
-        onChange={(e) => {
-          handleChange(e);
-          setFieldValue("contact.name", e.target.value)
-        }}
-        onBlur={handleBlur}
-        value={values.contact.name}
-      />
-    </div>
-    <div>
-      <label htmlFor="email">Email:</label>
-      <input
-        type="email"
-        name="email"
-        onChange={(e) => {
-          handleChange(e);
-          setFieldValue("contact.email", e.target.value)
-        }}
-        onBlur={handleBlur}
-        value={values.contact.email}
-      />
-    </div>
-    <div>
-      <label htmlFor="message">Message:</label>
-      <textarea
-        name="message"
-        onChange={(e) => {
-          handleChange(e);
-          setFieldValue("contact.message", e.target.value)
-        }}
-        onBlur={handleBlur}
-        value={values.contact.message}
-      />
-    </div>
-    <button type="submit" disabled={isSubmitting}>
-      Submit
-    </button>
-  </form>
-);
+interface MyFormProps {
+  handleSubmit: (values: FormValues, actions: unknown) => void;
+  onBlurCep: (ev: React.FocusEvent<HTMLInputElement>, setFieldValue: FormikProps<FormValues>['setFieldValue']) => void;
+}
 
-// Utilize withFormik para configurar o comportamento do formulário
-const MyFormWithFormik = withFormik<OtherProps, FormValues>({
-  mapPropsToValues: ({ contactData }) => {
-    return {
-      contact: contactData || { name: '', email: '', message: '' },
-    };
+const MyForm = (props: MyFormProps & FormikProps<FormValues>) => {
+  const { isValid, handleSubmit, onBlurCep } = props;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="form-control-group">
+        <label>Cep</label>
+        <input name="cep" type="text" onBlur={(ev: React.FocusEvent<HTMLInputElement>) => onBlurCep(ev, props.setFieldValue)}  value={props.values.cep} onChange={props.handleChange} />
+      </div>
+      <div className="form-control-group">
+        <label>Logradouro</label>
+        <input name="logradouro" type="text"  value={props.values.logradouro} onChange={props.handleChange}  />
+      </div>
+      <div className="form-control-group">
+        <label>Número</label>
+        <input name="numero" type="text" value={props.values.numero} onChange={props.handleChange}/>
+      </div>
+      <div className="form-control-group">
+        <label>Complemento</label>
+        <input name="complemento" type="text" value={props.values.complemento} onChange={props.handleChange} />
+      </div>
+      <div className="form-control-group">
+        <label>Bairro</label>
+        <input name="bairro" type="text"  value={props.values.bairro} onChange={props.handleChange}/>
+      </div>
+      <div className="form-control-group">
+        <label>Cidade</label>
+        <input name="cidade" type="text" value={props.values.cidade} onChange={props.handleChange}/>
+      </div>
+      <div className="form-control-group">
+        <label>Estado</label>
+        <select name="uf" onChange={props.handleChange} value={props.values.uf}>
+          <option value="">Selecione o Estado</option>
+          <option value="SP">São Paulo</option>
+          <option value="SC">Santa Catarina</option>
+        </select>
+      </div>
+      <button type="submit" disabled={!isValid}>Enviar</button>
+    </form>
+  );
+};
+
+const EnhancedForm = withFormik<MyFormProps, FormValues>({
+  mapPropsToValues: () => ({
+    cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+  }),
+
+  handleSubmit: (values, actions) => {
+    actions.props.handleSubmit(values, actions);
   },
-  handleSubmit: (values, { props, setSubmitting }) => {
-    props.handleSubmit(values);
-    setSubmitting(false);
-  },
+
+  validateOnMount: true,
+
 })(MyForm);
 
-export default MyFormWithFormik;
+export default EnhancedForm;
